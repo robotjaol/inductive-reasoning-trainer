@@ -6,7 +6,7 @@ import {
   ChoiceOption,
   DetailedExplanation,
 } from '../types';
-import { parameterizedQuestion, questionFingerprint } from './parameterizedQuestions';
+import { parameterizedQuestion, questionFingerprint, assertUniqueQuestionSet } from './parameterizedQuestions';
 
 // Helper for deterministic pseudo-random or fast seeded random
 function getRandomInt(min: number, max: number): number {
@@ -881,5 +881,6 @@ export function generateQuestionsSet(
     questions.push(q);
   }
 
+  assertUniqueQuestionSet(questions, safeCount);
   return questions;
 }

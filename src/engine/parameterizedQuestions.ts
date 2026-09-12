@@ -77,6 +77,13 @@ export function parameterizedQuestion(code: number, family: QuestionFamily, diff
 }
 
 export function questionFingerprint(q: InductiveQuestion): string {
+  // Object property order is not part of the displayed question.
+  const stable = (value: unknown): string => JSON.stringify(value, (_key, nested) => {
+    if (nested && typeof nested === 'object' && !Array.isArray(nested)) {
+      return Object.fromEntries(Object.entries(nested).sort(([a], [b]) => a.localeCompare(b)));
+    }
+    return nested;
+  });
   const visual = (s?: StimulusItem) => {
     if (!s) return null;
     const { id, textLabel, description, ...data } = s;
@@ -85,9 +92,31 @@ export function questionFingerprint(q: InductiveQuestion): string {
     const period = data.innerShapes?.length || data.customPaths?.length ? 360 : periods[data.primaryShape ?? ''] ?? 360;
     data.rotation = ((data.rotation ?? 0) % period + period) % period;
     data.fillColor ??= 'none';
+    if (data.segments) data.segments = { ...data.segments, shadedIndices: [...data.segments.shadedIndices].sort((a, b) => a - b) };
     return data;
   };
-  return JSON.stringify([q.family, q.groupA?.items.map(visual), q.groupB?.items.map(visual), visual(q.testItem), q.contextStimuli?.map(visual),
+  const unordered = (items: StimulusItem[]) => items.map(s => stable(visual(s))).sort();
+  // Reordering examples does not create a new classification/rule problem.
+  // Changing distractors or answer letters does not create a new problem either.
+  // Sequence and analogy positions, however, are essential to their meaning.
+  return stable([
+    q.family,
+    q.groupA && unordered(q.groupA.items),
+    q.groupB && unordered(q.groupB.items),
+    visual(q.testItem),
+    q.contextStimuli && (q.family === 'sequence_induction' ? q.contextStimuli.map(visual) : unordered(q.contextStimuli)),
     q.analogyItems && [q.analogyItems.a, q.analogyItems.b, q.analogyItems.c].map(visual),
-    q.options.map(o => JSON.stringify(o.stimulus ? visual(o.stimulus) : o.label)).sort()]);
+    q.family === 'odd_one_out' ? unordered(q.options.map(o => o.stimulus!)) : undefined,
+  ]);
+}
+
+/** Fail closed before a session can display a partial or repeated question set. */
+export function assertUniqueQuestionSet(questions: InductiveQuestion[], expectedCount: number): void {
+  if (questions.length !== expectedCount) throw new Error('Jumlah soal tidak sesuai permintaan.');
+  const fingerprints = new Set<string>();
+  for (const question of questions) {
+    const fingerprint = questionFingerprint(question);
+    if (fingerprints.has(fingerprint)) throw new Error('Duplikat isi soal terdeteksi. Sesi tidak dimulai.');
+    fingerprints.add(fingerprint);
+  }
 }
