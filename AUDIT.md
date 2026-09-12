@@ -1,5 +1,17 @@
 # Audit logika alur penilaian
 
+## Bank latihan tetap
+
+Katalog kini memuat tepat 1000 soal tetap, 200 per kategori. Sepuluh
+referensi asli dipertahankan dan dilengkapi 990 soal berparameter tetap.
+Urutan opsi memakai seed lokal; isi, kunci dan ID tidak berubah setelah
+reload. Bank divalidasi saat pemuatan untuk jumlah dan keunikan isi.
+Katalog menampilkan 25 soal per halaman, mendukung pencarian, filter,
+bookmark, latihan satu soal, dan latihan semua hasil filter hingga 1000
+soal sekaligus. Pembahasan katalog menampilkan konteks semua kategori.
+Efek samping penyimpanan bookmark dipindahkan keluar updater React agar
+StrictMode tidak menjalankan toggle dua kali.
+
 Perbaikan mencakup koneksi katalog/bookmark, transisi latihan katalog,
 pengulangan sesi, timer berbasis tenggat, submit idempoten, statistik ujian
 tanpa hitungan ganda, shortcut yang tidak aktif di dialog/halaman lain,

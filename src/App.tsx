@@ -122,6 +122,23 @@ export default function App() {
     setCurrentMode('assessment');
   };
 
+  const handlePracticeBank = (questions: InductiveQuestion[]) => {
+    if (!questions.length) return;
+    finishedRef.current = false;
+    practiceRecorded.current.clear();
+    setSessionConfig({ mode: 'practice', questionCount: questions.length, category: 'all', difficulty: 'all', timerEnabled: false, secondsPerQuestion: 60 });
+    setSessionQuestions([...questions]);
+    setSessionIndex(0);
+    setUserAnswers({});
+    setFlaggedIds(new Set());
+    setCompletedRecord(null);
+    setShowSubmitModal(false);
+    setSessionStartTime(Date.now());
+    setTimeRemainingSeconds(null);
+    setIsTimerRunning(false);
+    setCurrentMode('assessment');
+  };
+
   // -------------------------------------------------------------
   // SELECTION & ANSWERS HANDLERS
   // -------------------------------------------------------------
@@ -458,7 +475,11 @@ export default function App() {
           <BankSoalCatalog
             questions={QUESTIONS}
             bookmarkedIds={stats.bookmarkedQuestionIds}
-            onToggleBookmark={(id) => setStats(prev => ({ ...prev, bookmarkedQuestionIds: toggleBookmark(id) }))}
+            onToggleBookmark={(id) => {
+              const bookmarkedQuestionIds = toggleBookmark(id);
+              setStats(prev => ({ ...prev, bookmarkedQuestionIds }));
+            }}
+            onPracticeQuestions={handlePracticeBank}
             onPracticeQuestion={(questionId) => {
               // Start focused 1-question practice session
               const target = QUESTIONS.find((q) => q.id === questionId);

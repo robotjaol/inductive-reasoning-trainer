@@ -1,6 +1,7 @@
 import { InductiveQuestion } from '../types';
+import { completeQuestionBank } from './questionBank';
 
-export const QUESTIONS: InductiveQuestion[] = [
+const REFERENCE_QUESTIONS: InductiveQuestion[] = [
   // ==========================================
   // SOAL 1: KLASIFIKASI KELOMPOK (Group Classification)
   // ==========================================
@@ -1372,3 +1373,4 @@ export const QUESTIONS: InductiveQuestion[] = [
   },
 ];
 
+export const QUESTIONS: InductiveQuestion[] = completeQuestionBank(REFERENCE_QUESTIONS);

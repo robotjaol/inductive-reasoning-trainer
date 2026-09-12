@@ -255,7 +255,7 @@ export const SvgStimulus: React.FC<SvgStimulusProps> = ({
           return { x: cx + 25 * Math.cos(angle), y: cy + 25 * Math.sin(angle) };
         }
         if (total === 1) return { x: cx, y: cy };
-        if (inner.position === 'radial' || inner.position === 'distributed') {
+        if (inner.position === 'radial' || inner.position === 'distributed' || total > 3) {
           const angle = (index * 2 * Math.PI) / total - Math.PI / 2;
           const dist = 32;
           return {

@@ -1,7 +1,7 @@
 import { InductiveQuestion, StimulusItem, QuestionFamily, DifficultyLevel } from '../types';
 
 // 4096 combinations of relevant counts/steps, independent of labels and option order.
-export function parameterizedQuestion(code: number, family: QuestionFamily, difficulty: DifficultyLevel): InductiveQuestion {
+export function parameterizedQuestion(code: number, family: QuestionFamily, difficulty: DifficultyLevel, random: () => number = Math.random): InductiveQuestion {
   const a = code % 8 + 1;
   const b = Math.floor(code / 8) % 8 + 1;
   const c = Math.floor(code / 64) % 8 + 1;
@@ -58,7 +58,7 @@ export function parameterizedQuestion(code: number, family: QuestionFamily, diff
   }
   const shuffled = candidates.map((value, i) => ({ ...value, correct: i === 0 }));
   for (let i = shuffled.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
+    const j = Math.floor(random() * (i + 1));
     [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
   }
   q.options = shuffled.map((value, i) => {

@@ -214,7 +214,7 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
               Matriks Penguasaan 5 Domain Penalaran Induktif
             </h2>
             <p className="text-xs text-slate-500 mt-0.5">
-              Tingkat kemahiran dihitung dari konsistensi ekstraksi aturan dan kecepatan eliminasi distractor.
+              Persentase jawaban benar per kategori dari riwayat ujian yang tersimpan.
             </p>
           </div>
           <span className="text-[10px] font-mono text-slate-400">

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { InductiveQuestion } from '../types';
 import { SvgStimulus } from './SvgStimulus';
 import { ExplanationView } from './ExplanationView';
@@ -18,6 +18,7 @@ interface BankSoalCatalogProps {
   bookmarkedIds: string[];
   onToggleBookmark: (id: string) => void;
   onPracticeQuestion: (questionId: string) => void;
+  onPracticeQuestions: (questions: InductiveQuestion[]) => void;
 }
 
 export const BankSoalCatalog: React.FC<BankSoalCatalogProps> = ({
@@ -25,12 +26,16 @@ export const BankSoalCatalog: React.FC<BankSoalCatalogProps> = ({
   bookmarkedIds,
   onToggleBookmark,
   onPracticeQuestion,
+  onPracticeQuestions,
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedFamily, setSelectedFamily] = useState<string>('all');
   const [selectedDifficulty, setSelectedDifficulty] = useState<string>('all');
   const [onlyBookmarked, setOnlyBookmarked] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [page, setPage] = useState(0);
+  const pageSize = 25;
+  useEffect(() => { setPage(0); setExpandedId(null); }, [searchQuery, selectedFamily, selectedDifficulty, onlyBookmarked]);
 
   const familyLabels: Record<string, string> = {
     group_classification: 'Klasifikasi Kelompok',
@@ -46,10 +51,12 @@ export const BankSoalCatalog: React.FC<BankSoalCatalogProps> = ({
     if (selectedDifficulty !== 'all' && q.difficulty !== selectedDifficulty) return false;
     if (searchQuery.trim()) {
       const qText = `${q.title} ${q.prompt} ${q.explanation.hiddenRule} ${q.tags.join(' ')}`.toLowerCase();
-      if (!qText.includes(searchQuery.toLowerCase())) return false;
+      if (!qText.includes(searchQuery.trim().toLowerCase())) return false;
     }
     return true;
   });
+  const pages = Math.max(1, Math.ceil(filteredQuestions.length / pageSize));
+  const activePage = Math.min(page, pages - 1);
 
   const toggleExpand = (id: string) => {
     setExpandedId(expandedId === id ? null : id);
@@ -70,11 +77,14 @@ export const BankSoalCatalog: React.FC<BankSoalCatalogProps> = ({
             Bank Soal Standar Penalaran Induktif
           </h1>
           <p className="text-xs text-slate-600 mt-0.5">
-            Arsip instrumen uji representatif dengan bedah aturan invarian formal, pohon keputusan analitis, dan telaah opsi pengecoh.
+            {questions.length.toLocaleString('id-ID')} soal latihan tetap dengan jawaban dan pembahasan. Pilih soal, simpan, atau cari berdasarkan kategori.
           </p>
         </div>
 
         <div className="flex items-center gap-2">
+          <button type="button" disabled={filteredQuestions.length === 0} onClick={() => onPracticeQuestions(filteredQuestions)} className="px-3 py-2 rounded bg-slate-900 text-white text-xs disabled:opacity-40">
+            Latih Semua ({filteredQuestions.length})
+          </button>
           <span className="text-xs font-mono px-2.5 py-1 rounded bg-slate-100 border border-slate-200 text-slate-700 font-semibold">
             {filteredQuestions.length} Butir Soal Terfilter
           </span>
@@ -168,6 +178,11 @@ export const BankSoalCatalog: React.FC<BankSoalCatalogProps> = ({
       </div>
 
       {/* Questions List */}
+      <div className="flex items-center justify-between gap-3 text-xs" aria-label="Halaman bank soal">
+        <button type="button" disabled={activePage === 0} onClick={() => { setPage(activePage - 1); setExpandedId(null); }} className="border rounded px-3 py-2 disabled:opacity-40">Halaman Sebelumnya</button>
+        <span>Halaman {activePage + 1} / {pages}</span>
+        <button type="button" disabled={activePage >= pages - 1} onClick={() => { setPage(activePage + 1); setExpandedId(null); }} className="border rounded px-3 py-2 disabled:opacity-40">Halaman Berikutnya</button>
+      </div>
       <div className="space-y-3">
         {filteredQuestions.length === 0 ? (
           <div className="bg-white rounded-lg border border-slate-200 p-8 text-center space-y-1">
@@ -179,7 +194,7 @@ export const BankSoalCatalog: React.FC<BankSoalCatalogProps> = ({
             </p>
           </div>
         ) : (
-          filteredQuestions.map((q, idx) => {
+          filteredQuestions.slice(activePage * pageSize, (activePage + 1) * pageSize).map((q, idx) => {
             const isBookmarked = bookmarkedIds.includes(q.id);
             const isExpanded = expandedId === q.id;
 
@@ -192,7 +207,7 @@ export const BankSoalCatalog: React.FC<BankSoalCatalogProps> = ({
                 <div className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white">
                   <div className="flex items-start gap-3 min-w-0">
                     <span className="w-8 h-8 rounded border border-slate-200 bg-slate-50 font-mono text-xs font-bold flex items-center justify-center text-slate-800 shrink-0">
-                      {String(idx + 1).padStart(2, '0')}
+                      {String(activePage * pageSize + idx + 1).padStart(2, '0')}
                     </span>
                     <div className="space-y-1 min-w-0">
                       <div className="flex items-center gap-1.5 flex-wrap text-xs">
@@ -271,7 +286,7 @@ export const BankSoalCatalog: React.FC<BankSoalCatalogProps> = ({
                 {isExpanded && (
                   <div className="p-4 sm:p-5 border-t border-slate-100 bg-slate-50/50 space-y-5">
                     {/* Visual Stimulus Preview if Group Classification */}
-                    {q.family === 'group_classification' && q.groupA && q.groupB && (
+                    {q.groupA && q.groupB && (
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
                         <div className="p-3 bg-white rounded border border-slate-200 space-y-2">
                           <span className="font-bold text-slate-900 block font-mono text-[11px] uppercase">
@@ -295,6 +310,12 @@ export const BankSoalCatalog: React.FC<BankSoalCatalogProps> = ({
                         </div>
                       </div>
                     )}
+
+                    <div className="flex flex-wrap gap-3">
+                      {q.testItem && <div><p className="text-xs">Gambar Uji</p><SvgStimulus stimulus={q.testItem} size={100} /></div>}
+                      {q.contextStimuli?.map((item, i) => <div key={i}><p className="text-xs">Figur {i + 1}</p><SvgStimulus stimulus={item} size={100} /></div>)}
+                      {q.analogyItems && Object.entries(q.analogyItems).map(([name, item]) => <div key={name}><p className="text-xs">{name.toUpperCase()}</p><SvgStimulus stimulus={item} size={100} /></div>)}
+                    </div>
 
                     {/* Options list */}
                     <div className="space-y-2">
