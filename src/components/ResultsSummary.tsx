@@ -469,6 +469,13 @@ export const ResultsSummary: React.FC<ResultsSummaryProps> = ({
             )}
 
             {/* Explanation View */}
+            <div className="flex flex-wrap gap-3">
+              {activeReviewItem.contextStimuli?.map((it, idx) => <SvgStimulus key={idx} stimulus={it} size={100} />)}
+              {activeReviewItem.analogyItems && Object.entries(activeReviewItem.analogyItems).map(([name, it]) => <div key={name}><span>{name.toUpperCase()}</span><SvgStimulus stimulus={it} size={100} /></div>)}
+            </div>
+            <div className="flex flex-wrap gap-3">
+              {activeReviewItem.options.map(opt => <div key={opt.id} className="border rounded p-2 text-xs"><p>{opt.id}. {opt.label}</p>{opt.stimulus && <SvgStimulus stimulus={opt.stimulus} size={100} />}</div>)}
+            </div>
             <div className="pt-2 border-t border-slate-100">
               <ExplanationView
                 explanation={activeReviewItem.explanation}

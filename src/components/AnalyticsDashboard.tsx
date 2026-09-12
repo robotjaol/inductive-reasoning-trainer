@@ -71,10 +71,11 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
 
   // Average time calculation across exam history
   const totalExamSeconds = examHistoryList.reduce((acc, curr) => acc + curr.timeSpentSeconds, 0);
+  const totalExamQuestions = examHistoryList.reduce((acc, curr) => acc + curr.totalQuestions, 0);
   const avgExamSecondsPerQuestion =
-    stats.totalSolved > 0 && totalExamSeconds > 0
-      ? Math.round(totalExamSeconds / stats.totalSolved)
-      : 48;
+    totalExamQuestions > 0
+      ? Math.round(totalExamSeconds / totalExamQuestions)
+      : 0;
 
   const formatSeconds = (sec: number) => {
     const m = Math.floor(sec / 60);
@@ -217,17 +218,17 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
             </p>
           </div>
           <span className="text-[10px] font-mono text-slate-400">
-            BENCHMARK PSIKOMETRI
+            HASIL UJIAN TERSIMPAN
           </span>
         </div>
 
         <div className="space-y-3">
           {families.map((fam) => {
-            // Estimate proficiency based on user overall accuracy scaled with benchmark
-            const userProficiency =
-              stats.totalSolved > 0
-                ? Math.min(100, Math.max(20, Math.round(accuracy * (fam.benchmark / 75))))
-                : fam.benchmark;
+            const totals = examHistoryList.reduce((sum, record) => {
+              const value = record.familyBreakdown?.[fam.id];
+              return { total: sum.total + (value?.total || 0), correct: sum.correct + (value?.correct || 0) };
+            }, { total: 0, correct: 0 });
+            const userProficiency = totals.total ? Math.round(totals.correct / totals.total * 100) : 0;
 
             return (
               <div
@@ -245,7 +246,7 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
                   </div>
                   <div className="flex items-center gap-2 self-end sm:self-auto shrink-0">
                     <span className="font-mono text-xs font-bold text-slate-900 tabular-nums">
-                      {stats.totalSolved > 0 ? `${userProficiency}%` : 'Standar: ' + fam.benchmark + '%'}
+                      {totals.total > 0 ? `${userProficiency}%` : 'Belum ada data'}
                     </span>
                     <span
                       className={`text-[10px] font-mono font-semibold px-1.5 py-0.5 rounded border ${
@@ -256,7 +257,7 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
                           : 'bg-rose-50 text-rose-800 border-rose-200'
                       }`}
                     >
-                      {userProficiency >= 80
+                      {!totals.total ? 'Belum dinilai' : userProficiency >= 80
                         ? 'Mastery (Tinggi)'
                         : userProficiency >= 60
                         ? 'Kompeten'

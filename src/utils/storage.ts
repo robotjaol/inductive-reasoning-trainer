@@ -15,7 +15,18 @@ export const getStoredStats = (): UserStats => {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return defaultStats;
     const parsed = JSON.parse(raw);
-    return { ...defaultStats, ...parsed };
+    if (!parsed || typeof parsed !== 'object') return { ...defaultStats };
+    const nonnegative = (value: unknown) => typeof value === 'number' && Number.isFinite(value) && value >= 0 ? Math.floor(value) : 0;
+    const totalSolved = nonnegative(parsed.totalSolved);
+    return {
+      ...defaultStats,
+      totalSolved,
+      totalCorrect: Math.min(totalSolved, nonnegative(parsed.totalCorrect)),
+      streakDays: nonnegative(parsed.streakDays),
+      bookmarkedQuestionIds: Array.isArray(parsed.bookmarkedQuestionIds) ? parsed.bookmarkedQuestionIds.filter((id: unknown) => typeof id === 'string') : [],
+      lastExamScore: typeof parsed.lastExamScore === 'number' && Number.isFinite(parsed.lastExamScore) ? Math.min(100, Math.max(0, parsed.lastExamScore)) : undefined,
+      history: Array.isArray(parsed.history) ? parsed.history.filter((r: UserExamRecord) => r && typeof r.id === 'string' && typeof r.date === 'string' && Number.isFinite(r.totalQuestions) && r.totalQuestions > 0 && Number.isFinite(r.correctAnswers) && Number.isFinite(r.scorePercentage) && Number.isFinite(r.timeSpentSeconds) && r.familyBreakdown && typeof r.familyBreakdown === 'object').slice(0, 50) : [],
+    };
   } catch {
     return defaultStats;
   }

@@ -194,6 +194,15 @@ export const SvgStimulus: React.FC<SvgStimulusProps> = ({
     const { total, shadedIndices } = stimulus.segments;
     if (total <= 1) return null;
 
+    if (stimulus.primaryShape === 'square' && total === 4) {
+      const half = r * 0.82;
+      return <g transform={`rotate(${stimulus.rotation ?? 0} ${cx} ${cy})`}>
+        {[[cx, cy - half], [cx, cy], [cx - half, cy], [cx - half, cy - half]].map(([x, y], i) => (
+          <rect key={i} x={x} y={y} width={half} height={half} fill={shadedIndices.includes(i) ? '#1e293b' : 'none'} stroke="#1e293b" strokeWidth={1.5} />
+        ))}
+      </g>;
+    }
+
     const paths: React.ReactNode[] = [];
     const angleStep = (2 * Math.PI) / total;
 
@@ -237,10 +246,14 @@ export const SvgStimulus: React.FC<SvgStimulusProps> = ({
           ? '#3b82f6'
           : '#0f172a';
       const stroke = '#0f172a';
-      const count = inner.count || 1;
+      const count = inner.count ?? 1;
 
       // Coordinate helper
       const getInnerCoords = (index: number, total: number) => {
+        if (inner.position === 'corners' || inner.position === 'border') {
+          const angle = -Math.PI / 2 + index * 2 * Math.PI / Math.max(3, total);
+          return { x: cx + 25 * Math.cos(angle), y: cy + 25 * Math.sin(angle) };
+        }
         if (total === 1) return { x: cx, y: cy };
         if (inner.position === 'radial' || inner.position === 'distributed') {
           const angle = (index * 2 * Math.PI) / total - Math.PI / 2;
@@ -334,7 +347,7 @@ export const SvgStimulus: React.FC<SvgStimulusProps> = ({
           );
         }
       }
-      return <g key={`inner-group-${idx}`}>{shapes}</g>;
+      return <g key={`inner-group-${idx}`} transform={`rotate(${(stimulus.rotation ?? 0) + (inner.rotation ?? 0)} ${cx} ${cy})`}>{shapes}</g>;
     });
   };
 
@@ -352,22 +365,26 @@ export const SvgStimulus: React.FC<SvgStimulusProps> = ({
     for (let i = 0; i < total; i++) {
       const isBlack = i < blackCount;
       const angle = (i * 2 * Math.PI) / total - Math.PI / 2;
-      const x = total === 1 ? cx : cx + radius * Math.cos(angle);
-      const y = total === 1 ? cy : cy + radius * Math.sin(angle);
+      const grid = stimulus.dots.positions === 'grid';
+      const columns = Math.ceil(Math.sqrt(total));
+      const rows = Math.ceil(total / columns);
+      const spacing = Math.min(18, 94 / Math.max(columns, rows));
+      const x = grid ? cx + ((i % columns) - (columns - 1) / 2) * spacing : total === 1 ? cx : cx + radius * Math.cos(angle);
+      const y = grid ? cy + (Math.floor(i / columns) - (rows - 1) / 2) * spacing : total === 1 ? cy : cy + radius * Math.sin(angle);
 
       items.push(
         <circle
           key={`dot-${i}`}
           cx={x}
           cy={y}
-          r={6.5}
+          r={grid ? Math.min(5, spacing * 0.32) : 6.5}
           fill={isBlack ? '#0f172a' : '#ffffff'}
           stroke="#0f172a"
           strokeWidth={2}
         />
       );
     }
-    return <g id="stimulus-dots">{items}</g>;
+    return <g>{items}</g>;
   };
 
   // Custom paths if provided
@@ -397,6 +414,8 @@ export const SvgStimulus: React.FC<SvgStimulusProps> = ({
       } ${className}`}
     >
       <svg
+        role="img"
+        aria-label={stimulus.description || 'Figur pola induktif'}
         viewBox="0 0 200 200"
         width={size}
         height={size}

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { InductiveQuestion, UserStats, UserExamRecord, QuestionFamily, DifficultyLevel } from './types';
 import { QUESTIONS } from './data/questions';
 import { generateQuestionsSet } from './engine/proceduralGenerator';
@@ -56,6 +56,8 @@ export default function App() {
   } | null>(null);
 
   const [showSubmitModal, setShowSubmitModal] = useState<boolean>(false);
+  const finishedRef = useRef(false);
+  const practiceRecorded = useRef(new Set<string>());
 
   const isSessionActive = Boolean(sessionConfig && !completedRecord);
 
@@ -75,25 +77,24 @@ export default function App() {
   useEffect(() => {
     if (!isSessionActive || timeRemainingSeconds === null || !isTimerRunning) return;
 
+    const deadline = Date.now() + timeRemainingSeconds * 1000;
     const timer = setInterval(() => {
-      setTimeRemainingSeconds((prev) => {
-        if (prev === null) return null;
-        if (prev <= 1) {
-          clearInterval(timer);
-          handleFinishSession();
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
+      setTimeRemainingSeconds(Math.max(0, Math.ceil((deadline - Date.now()) / 1000)));
+    }, 250);
 
     return () => clearInterval(timer);
-  }, [isSessionActive, timeRemainingSeconds, isTimerRunning]);
+  }, [isSessionActive, isTimerRunning]);
+
+  useEffect(() => {
+    if (isSessionActive && timeRemainingSeconds === 0) handleFinishSession();
+  }, [isSessionActive, timeRemainingSeconds]);
 
   // -------------------------------------------------------------
   // START NEW SESSION
   // -------------------------------------------------------------
   const handleStartSession = (config: SessionConfig) => {
+    finishedRef.current = false;
+    practiceRecorded.current.clear();
     // Generate fresh randomized set
     const generated = generateQuestionsSet(
       config.questionCount,
@@ -126,7 +127,6 @@ export default function App() {
   // -------------------------------------------------------------
   const handleSelectOption = (optionId: string) => {
     if (!currentQuestion) return;
-    const isFirstTime = !userAnswers[currentQuestion.id];
 
     setUserAnswers((prev) => ({
       ...prev,
@@ -134,7 +134,8 @@ export default function App() {
     }));
 
     // Update global solved stats
-    if (isFirstTime) {
+    if (sessionConfig?.mode === 'practice' && !practiceRecorded.current.has(currentQuestion.id)) {
+      practiceRecorded.current.add(currentQuestion.id);
       const isCorrect = optionId === currentQuestion.correctAnswerId;
       const updated = recordPracticeSolve(isCorrect);
       setStats(updated);
@@ -167,6 +168,9 @@ export default function App() {
   // SESSION SUBMISSION & RESULTS
   // -------------------------------------------------------------
   const handleFinishSession = () => {
+    if (finishedRef.current || !sessionConfig || sessionQuestions.length === 0) return;
+    finishedRef.current = true;
+    setIsTimerRunning(false);
     setShowSubmitModal(false);
     const timeSpent = Math.max(1, Math.round((Date.now() - sessionStartTime) / 1000));
 
@@ -223,6 +227,9 @@ export default function App() {
   // Retake incorrect questions
   const handleRetakeIncorrect = (incorrectQuestions: InductiveQuestion[]) => {
     if (!sessionConfig || incorrectQuestions.length === 0) return;
+    finishedRef.current = false;
+    practiceRecorded.current.clear();
+    setSessionConfig({ ...sessionConfig, questionCount: incorrectQuestions.length });
     setSessionQuestions(incorrectQuestions);
     setSessionIndex(0);
     setUserAnswers({});
@@ -241,6 +248,8 @@ export default function App() {
   // Retake all questions
   const handleRetakeAll = () => {
     if (!sessionConfig) return;
+    finishedRef.current = false;
+    practiceRecorded.current.clear();
     setSessionIndex(0);
     setUserAnswers({});
     setFlaggedIds(new Set());
@@ -257,6 +266,9 @@ export default function App() {
 
   // Reset to configuration view
   const handleConfigureNewSession = () => {
+    setShowSubmitModal(false);
+    setTimeRemainingSeconds(null);
+    setIsTimerRunning(false);
     setSessionConfig(null);
     setCompletedRecord(null);
     setSessionQuestions([]);
@@ -270,11 +282,12 @@ export default function App() {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       // Ignore when typing in input
-      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
+      if (e.ctrlKey || e.metaKey || e.altKey || e.repeat || (e.target instanceof HTMLElement && e.target.closest('input, textarea, select, button, [contenteditable="true"]'))) {
         return;
       }
 
-      if (!isSessionActive || !currentQuestion) return;
+      if (!isSessionActive || !currentQuestion || currentMode !== 'assessment' || showSubmitModal || isDesignManualOpen) return;
+      if (['ArrowRight', 'ArrowLeft', 'Backspace'].includes(e.key)) e.preventDefault();
 
       const key = e.key.toUpperCase();
       const validLetterKeys = ['A', 'B', 'C', 'D', 'E'];
@@ -302,14 +315,14 @@ export default function App() {
         handleToggleFlag();
       }
       // Clear answer
-      else if (key === 'C' || e.key === 'Backspace') {
+      else if (e.key === 'Backspace') {
         handleClearOption();
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isSessionActive, currentQuestion, sessionIndex, totalQuestions, userAnswers, flaggedIds]);
+  }, [isSessionActive, currentQuestion, sessionIndex, totalQuestions, userAnswers, flaggedIds, currentMode, showSubmitModal, isDesignManualOpen]);
 
   // Family label helper
   const getFamilyLabel = (family?: QuestionFamily | 'all') => {
@@ -390,6 +403,7 @@ export default function App() {
                   {/* Question Card (Dominant, 8 columns on large screens) */}
                   <div className="lg:col-span-8 xl:col-span-9 space-y-4">
                     <QuestionCard
+                      key={currentQuestion.id}
                       question={currentQuestion}
                       currentIndex={sessionIndex}
                       totalQuestions={totalQuestions}
@@ -442,10 +456,19 @@ export default function App() {
         {/* ======================================================== */}
         {currentMode === 'catalog' && (
           <BankSoalCatalog
+            questions={QUESTIONS}
+            bookmarkedIds={stats.bookmarkedQuestionIds}
+            onToggleBookmark={(id) => setStats(prev => ({ ...prev, bookmarkedQuestionIds: toggleBookmark(id) }))}
             onPracticeQuestion={(questionId) => {
               // Start focused 1-question practice session
               const target = QUESTIONS.find((q) => q.id === questionId);
               if (target) {
+                finishedRef.current = false;
+                practiceRecorded.current.clear();
+                setSessionStartTime(Date.now());
+                setTimeRemainingSeconds(null);
+                setIsTimerRunning(false);
+                setShowSubmitModal(false);
                 setSessionConfig({
                   mode: 'practice',
                   questionCount: 1,
@@ -468,7 +491,7 @@ export default function App() {
         {/* ======================================================== */}
         {/* MODE 3: THEORY & METHODOLOGY GUIDE */}
         {/* ======================================================== */}
-        {currentMode === 'theory' && <TheoryGuide />}
+        {currentMode === 'theory' && <TheoryGuide onStartPractice={() => { handleConfigureNewSession(); setCurrentMode('assessment'); }} />}
 
         {/* ======================================================== */}
         {/* MODE 4: HISTORICAL ANALYTICS & LOGS */}

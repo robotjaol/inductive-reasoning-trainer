@@ -164,10 +164,10 @@ export const QUESTIONS: InductiveQuestion[] = [
   // ==========================================
   {
     id: 'ind-02',
-    title: 'Odd-One-Out: Relasi Sisi Luar Terhadap Sisi Dalam',
+    title: 'Odd-One-Out: Relasi Titik Sudut/Ujung Luar Terhadap Titik Sudut/Ujung Dalam',
     family: 'odd_one_out',
     difficulty: 'sedang',
-    tags: ['Odd-One-Out', 'Hubungan Relasional', 'Pengurangan Sisi'],
+    tags: ['Odd-One-Out', 'Hubungan Relasional', 'Pengurangan Titik Sudut/Ujung'],
     prompt:
       'Di antara 5 opsi gambar berikut, empat di antaranya mengikuti aturan relasi geometris yang sama, sedangkan SATU gambar melanggar aturan tersebut (Odd-One-Out). Manakah gambar yang TIDAK mengikuti pola?',
     options: [
@@ -199,7 +199,7 @@ export const QUESTIONS: InductiveQuestion[] = [
           sides: 4,
           innerShapes: [{ shape: 'line', count: 1, fill: 'black' }],
         },
-        text: 'Persegi (4 sisi) berisi Garis Lurus (2 ujung / 2 sisi)',
+        text: 'Persegi (4 titik sudut/ujung) berisi Garis Lurus (2 ujung / 2 titik sudut/ujung)',
       },
       {
         id: 'D',
@@ -209,7 +209,7 @@ export const QUESTIONS: InductiveQuestion[] = [
           sides: 6,
           innerShapes: [{ shape: 'triangle', count: 1, fill: 'gray' }],
         },
-        text: 'Segienam (6 sisi) berisi Segitiga (3 sisi)',
+        text: 'Segienam (6 titik sudut/ujung) berisi Segitiga (3 titik sudut/ujung)',
       },
       {
         id: 'E',
@@ -219,24 +219,24 @@ export const QUESTIONS: InductiveQuestion[] = [
           sides: 4,
           innerShapes: [{ shape: 'line', count: 1, fill: 'black' }],
         },
-        text: 'Belah Ketupat (4 sisi) berisi Garis Lurus (2 ujung)',
+        text: 'Belah Ketupat (4 titik sudut/ujung) berisi Garis Lurus (2 ujung)',
       },
     ],
     correctAnswerId: 'D',
     explanation: {
       hiddenRule:
-        'Aturan konsisten pada gambar mayoritas: Jumlah sisi bangun luar dikurangi jumlah sisi bangun dalam SELALU SAMA DENGAN 2 (Sisi Luar - Sisi Dalam = 2).',
+        'Aturan konsisten pada gambar mayoritas: Jumlah titik sudut/ujung bangun luar dikurangi jumlah titik sudut/ujung bangun dalam SELALU SAMA DENGAN 2 (Titik Sudut/Ujung Luar - Titik Sudut/Ujung Dalam = 2).',
       summary:
-        'Pada Opsi D, bangun luar adalah segienam (6 sisi) dan bangun dalam segitiga (3 sisi), selisih sisinya adalah 6 - 3 = 3 (seharusnya 2). Maka Opsi D adalah Odd-One-Out.',
+        'Pada Opsi D, bangun luar adalah segienam (6 titik sudut/ujung) dan bangun dalam segitiga (3 titik sudut/ujung), selisih titik sudut/ujungnya adalah 6 - 3 = 3 (seharusnya 2). Maka Opsi D adalah Odd-One-Out.',
       evidenceAnalysis: [
         {
-          title: 'Perhitungan Selisih Sisi Tiap Pilihan',
+          title: 'Perhitungan Selisih Titik Sudut/Ujung Tiap Pilihan',
           points: [
-            'Opsi A: Segienam (6 sisi) - Persegi (4 sisi) = 6 - 4 = 2 (BENAR SESUAI POLA)',
-            'Opsi B: Segilima (5 sisi) - Segitiga (3 sisi) = 5 - 3 = 2 (BENAR SESUAI POLA)',
-            'Opsi C: Persegi (4 sisi) - Garis (2 titik/dimensi 2) = 4 - 2 = 2 (BENAR SESUAI POLA)',
-            'Opsi D: Segienam (6 sisi) - Segitiga (3 sisi) = 6 - 3 = 3 (MENYIMPANG DARI POLA)',
-            'Opsi E: Belah Ketupat (4 sisi) - Garis (2 dimensi) = 4 - 2 = 2 (BENAR SESUAI POLA)',
+            'Opsi A: Segienam (6 titik sudut/ujung) - Persegi (4 titik sudut/ujung) = 6 - 4 = 2 (BENAR SESUAI POLA)',
+            'Opsi B: Segilima (5 titik sudut/ujung) - Segitiga (3 titik sudut/ujung) = 5 - 3 = 2 (BENAR SESUAI POLA)',
+            'Opsi C: Persegi (4 titik sudut/ujung) - Garis (2 ujung) = 4 - 2 = 2 (BENAR SESUAI POLA)',
+            'Opsi D: Segienam (6 titik sudut/ujung) - Segitiga (3 titik sudut/ujung) = 6 - 3 = 3 (MENYIMPANG DARI POLA)',
+            'Opsi E: Belah Ketupat (4 titik sudut/ujung) - Garis (2 ujung) = 4 - 2 = 2 (BENAR SESUAI POLA)',
           ],
         },
       ],
@@ -245,13 +245,13 @@ export const QUESTIONS: InductiveQuestion[] = [
           title: 'Langkah 1: Jangan Terkecoh Ukuran atau Warna',
           content:
             'Warna abu-abu dan hitam adalah fitur distraktor. Fokus pada hubungan kuantitatif antara bentuk luar dan bentuk dalam.',
-          highlight: 'Fokus pada: Jumlah Sisi Luar vs Sisi Dalam',
+          highlight: 'Fokus pada: Jumlah Titik Sudut/Ujung Luar vs Titik Sudut/Ujung Dalam',
         },
         {
           title: 'Langkah 2: Menemukan Relasi Aritmatika Invarian',
           content:
-            'Bandingkan Opsi A (6 dan 4, selisih 2) dengan Opsi B (5 dan 3, selisih 2). Ini mengonfirmasi formula relasional: Selisih sisi = 2.',
-          highlight: 'Rumus: Sisi_Luar - Sisi_Dalam = 2',
+            'Bandingkan Opsi A (6 dan 4, selisih 2) dengan Opsi B (5 dan 3, selisih 2). Ini mengonfirmasi formula relasional: Selisih titik sudut/ujung = 2.',
+          highlight: 'Rumus: Titik Sudut/Ujung_Luar - Titik Sudut/Ujung_Dalam = 2',
         },
         {
           title: 'Langkah 3: Menentukan Pelanggar Pola',
@@ -263,12 +263,12 @@ export const QUESTIONS: InductiveQuestion[] = [
       distractors: [
         {
           optionId: 'A',
-          reason: 'Mengikuti aturan selisih 2 sisi dengan tepat (6 - 4 = 2).',
+          reason: 'Mengikuti aturan selisih 2 titik sudut/ujung dengan tepat (6 - 4 = 2).',
           flawType: 'incomplete_rule',
         },
         {
           optionId: 'B',
-          reason: 'Mengikuti aturan selisih 2 sisi dengan tepat (5 - 3 = 2).',
+          reason: 'Mengikuti aturan selisih 2 titik sudut/ujung dengan tepat (5 - 3 = 2).',
           flawType: 'incomplete_rule',
         },
         {
@@ -278,12 +278,12 @@ export const QUESTIONS: InductiveQuestion[] = [
         },
         {
           optionId: 'E',
-          reason: 'Belah ketupat 4 sisi - 2 = 2, memenuhi aturan invariant.',
+          reason: 'Belah ketupat 4 titik sudut/ujung - 2 = 2, memenuhi aturan invariant.',
           flawType: 'incomplete_rule',
         },
       ],
       proTip:
-        'Saat melihat figur bersarang (nested shapes), selalu hitung selisih atau rasio jumlah sisi antara bangun luar dan bangun dalam.',
+        'Saat melihat figur bersarang (nested shapes), selalu hitung selisih atau rasio jumlah titik sudut/ujung antara bangun luar dan bangun dalam.',
     },
   },
 

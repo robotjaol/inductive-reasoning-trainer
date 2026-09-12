@@ -264,6 +264,11 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
         )}
 
         {/* 4. Rule Identification / Context Figures */}
+        {question.family === 'rule_identification' && question.contextStimuli && (
+          <div className="flex flex-wrap gap-3">
+            {question.contextStimuli.map((item, idx) => <SvgStimulus key={idx} stimulus={item} size={100} />)}
+          </div>
+        )}
         {question.family === 'rule_identification' && question.groupA && question.groupB && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div className="rounded border border-slate-300 bg-slate-50 p-3 space-y-2">

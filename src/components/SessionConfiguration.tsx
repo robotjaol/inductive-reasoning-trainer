@@ -238,7 +238,7 @@ export const SessionConfiguration: React.FC<SessionConfigurationProps> = ({
             Randomisasi Prosedural Aktif
           </div>
           <p className="text-[11px] leading-relaxed">
-            Setiap sesi menghasilkan set soal baru dengan parameter sudut rotasi, paritas sisi, jumlah elemen dalam, serta urutan opsi (A–E) yang diacak secara unik untuk mencegah pengulangan pola.
+            Isi soal diperiksa agar tidak berulang dalam satu sesi hingga 1.000 soal. Aturan dasar dapat serupa dengan parameter berbeda. Sesi baru dapat memuat soal dari sesi sebelumnya.
           </p>
         </div>
 

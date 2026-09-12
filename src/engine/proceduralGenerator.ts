@@ -6,6 +6,7 @@ import {
   ChoiceOption,
   DetailedExplanation,
 } from '../types';
+import { parameterizedQuestion, questionFingerprint } from './parameterizedQuestions';
 
 // Helper for deterministic pseudo-random or fast seeded random
 function getRandomInt(min: number, max: number): number {
@@ -542,10 +543,10 @@ function generateAnalogyQuestion(index: number, difficulty: DifficultyLevel): In
     correctItemD = { primaryShape: 'square', rotation: 90, innerShapes: [{ shape: 'dot', count: 1, fill: 'black', position: 'corners' }] };
 
     distractorItems = [
-      { primaryShape: 'square', rotation: 180, innerShapes: [{ shape: 'dot', count: 1, fill: 'black' }] },
-      { primaryShape: 'square', rotation: 270, innerShapes: [{ shape: 'dot', count: 1, fill: 'black' }] },
-      { primaryShape: 'triangle', rotation: 90, innerShapes: [{ shape: 'dot', count: 1, fill: 'black' }] },
-      { primaryShape: 'diamond', rotation: 45, innerShapes: [{ shape: 'dot', count: 1, fill: 'black' }] },
+      { primaryShape: 'square', rotation: 180, innerShapes: [{ shape: 'dot', count: 1, fill: 'black', position: 'corners' }] },
+      { primaryShape: 'square', rotation: 270, innerShapes: [{ shape: 'dot', count: 1, fill: 'black', position: 'corners' }] },
+      { primaryShape: 'triangle', rotation: 90, innerShapes: [{ shape: 'dot', count: 1, fill: 'black', position: 'corners' }] },
+      { primaryShape: 'diamond', rotation: 45, innerShapes: [{ shape: 'dot', count: 1, fill: 'black', position: 'corners' }] },
     ];
   } else if (tType === 'side_plus_one') {
     // Number of sides increases by 1: Triangle (3) -> Square (4); Pentagon (5) -> Hexagon (6)
@@ -682,27 +683,27 @@ function generateSequenceInductionQuestion(index: number, difficulty: Difficulty
   if (sType === 'rotation_45') {
     ruleText = 'Bangun berotasi 45 derajat searah jarum jam secara konsisten pada setiap langkah (+45° CW).';
     seqItems = [
-      { primaryShape: 'diamond', rotation: 0, innerShapes: [{ shape: 'dot', count: 1, fill: 'black' }] },
-      { primaryShape: 'diamond', rotation: 45, innerShapes: [{ shape: 'dot', count: 1, fill: 'black' }] },
-      { primaryShape: 'diamond', rotation: 90, innerShapes: [{ shape: 'dot', count: 1, fill: 'black' }] },
-      { primaryShape: 'diamond', rotation: 135, innerShapes: [{ shape: 'dot', count: 1, fill: 'black' }] },
+      { primaryShape: 'diamond', rotation: 0, innerShapes: [{ shape: 'dot', count: 1, fill: 'black', position: 'corners' }] },
+      { primaryShape: 'diamond', rotation: 45, innerShapes: [{ shape: 'dot', count: 1, fill: 'black', position: 'corners' }] },
+      { primaryShape: 'diamond', rotation: 90, innerShapes: [{ shape: 'dot', count: 1, fill: 'black', position: 'corners' }] },
+      { primaryShape: 'diamond', rotation: 135, innerShapes: [{ shape: 'dot', count: 1, fill: 'black', position: 'corners' }] },
     ];
-    correctNext = { primaryShape: 'diamond', rotation: 180, innerShapes: [{ shape: 'dot', count: 1, fill: 'black' }] };
+    correctNext = { primaryShape: 'diamond', rotation: 180, innerShapes: [{ shape: 'dot', count: 1, fill: 'black', position: 'corners' }] };
     distractors = [
-      { primaryShape: 'diamond', rotation: 225, innerShapes: [{ shape: 'dot', count: 1, fill: 'black' }] },
-      { primaryShape: 'diamond', rotation: 90, innerShapes: [{ shape: 'dot', count: 1, fill: 'black' }] },
-      { primaryShape: 'square', rotation: 180, innerShapes: [{ shape: 'dot', count: 1, fill: 'black' }] },
-      { primaryShape: 'diamond', rotation: 270, innerShapes: [{ shape: 'dot', count: 1, fill: 'black' }] },
+      { primaryShape: 'diamond', rotation: 225, innerShapes: [{ shape: 'dot', count: 1, fill: 'black', position: 'corners' }] },
+      { primaryShape: 'diamond', rotation: 90, innerShapes: [{ shape: 'dot', count: 1, fill: 'black', position: 'corners' }] },
+      { primaryShape: 'square', rotation: 180, innerShapes: [{ shape: 'dot', count: 1, fill: 'black', position: 'corners' }] },
+      { primaryShape: 'diamond', rotation: 270, innerShapes: [{ shape: 'dot', count: 1, fill: 'black', position: 'corners' }] },
     ];
   } else if (sType === 'sides_growth') {
-    ruleText = 'Jumlah sisi bangun bertambah 1 pada setiap langkah deret: Segitiga (3) -> Segiempat (4) -> Segilima (5) -> Segienam (6) -> [Segitujuh / Bintang 7 / 7-gon].';
+    ruleText = 'Jumlah sisi bangun bertambah 1 pada setiap langkah deret: Segitiga (3) -> Segiempat (4) -> Segilima (5) -> Segienam (6) -> [Segitujuh / 7-gon].';
     seqItems = [
       { primaryShape: 'triangle', sides: 3, fillColor: 'none' },
       { primaryShape: 'square', sides: 4, fillColor: 'none' },
       { primaryShape: 'pentagon', sides: 5, fillColor: 'none' },
       { primaryShape: 'hexagon', sides: 6, fillColor: 'none' },
     ];
-    correctNext = { primaryShape: 'star', sides: 7, fillColor: 'none' };
+    correctNext = { sides: 7, fillColor: 'none' };
     distractors = [
       { primaryShape: 'hexagon', sides: 6, fillColor: 'none' },
       { primaryShape: 'square', sides: 4, fillColor: 'none' },
@@ -804,91 +805,6 @@ function generateSequenceInductionQuestion(index: number, difficulty: Difficulty
   };
 }
 
-// 5. Rule Identification (Identifikasi Pernyataan Aturan Logika)
-function generateRuleIdentificationQuestion(index: number, difficulty: DifficultyLevel): InductiveQuestion {
-  const isParity = (index % 2) === 0;
-
-  let ruleStatement = '';
-  let correctText = '';
-  let incorrectTexts: string[] = [];
-
-  if (isParity) {
-    ruleStatement = 'Semua bangun yang valid memiliki jumlah sisi yang merupakan bilangan genap.';
-    correctText = 'Setiap gambar yang lolos klasifikasi wajib memiliki jumlah sisi genap (4 atau 6).';
-    incorrectTexts = [
-      'Setiap gambar wajib memiliki jumlah sisi berupa bilangan ganjil.',
-      'Setiap gambar wajib memiliki titik hitam di bagian sudut bangun.',
-      'Setiap gambar harus memiliki luas arsir lebih dari 75%.',
-      'Hanya bangun lingkaran yang diperbolehkan.',
-    ];
-  } else {
-    ruleStatement = 'Jumlah sisi luar ditambah jumlah titik hitam di dalam selalu menghasilkan bilangan prima.';
-    correctText = 'Nilai (Sisi Luar + Titik Dalam) selalu merupakan bilangan prima (3, 5, atau 7).';
-    incorrectTexts = [
-      'Nilai (Sisi Luar + Titik Dalam) selalu bernilai genap.',
-      'Nilai (Sisi Luar - Titik Dalam) selalu sama dengan 0.',
-      'Jumlah titik dalam selalu dua kali lipat jumlah sisi luar.',
-      'Bentuk luar tidak berpengaruh pada keteraturan sama sekali.',
-    ];
-  }
-
-  const rawPool = [
-    { text: correctText, isCorrect: true },
-    ...incorrectTexts.map(t => ({ text: t, isCorrect: false })),
-  ];
-
-  const shuffled = shuffleArray(rawPool);
-  const optionLetters = ['A', 'B', 'C', 'D', 'E'];
-  let correctId = 'A';
-
-  const options: ChoiceOption[] = shuffled.map((item, idx) => {
-    const letter = optionLetters[idx];
-    if (item.isCorrect) correctId = letter;
-    return {
-      id: letter,
-      label: item.text,
-      text: item.text,
-    };
-  });
-
-  return {
-    id: `gen-rule-${index}-${Date.now()}`,
-    title: `Identifikasi Aturan Logika Tersembunyi #${index + 1}`,
-    family: 'rule_identification',
-    difficulty,
-    tags: ['identifikasi-aturan', 'induksi', 'logika'],
-    prompt: 'Berdasarkan observasi data eksperimen geometri yang diberikan, manakah formulasi hipotesis aturan induktif yang paling tepat?',
-    options,
-    correctAnswerId: correctId,
-    explanation: {
-      hiddenRule: ruleStatement,
-      summary: `Opsi ${correctId} mendefinisikan aturan keteraturan umum secara eksak tanpa kontradiksi.`,
-      evidenceAnalysis: [
-        {
-          title: 'Verifikasi Hipotesis',
-          points: [
-            'Hipotesis yang benar mencakup seluruh data positif dan secara konsisten menolak contoh kontras.',
-          ],
-        },
-      ],
-      stepByStep: [
-        {
-          title: 'Langkah 1: Periksa Kecocokan Opsi',
-          content: `Hanya Opsi ${correctId} yang berlaku konsisten untuk seluruh observasi.`,
-        },
-      ],
-      distractors: shuffled
-        .filter(s => !s.isCorrect)
-        .map(() => ({
-          optionId: '',
-          reason: 'Pernyataan bertentangan dengan bukti observasi yang ada.',
-          flawType: 'overgeneralization',
-        })),
-      proTip: 'Uji setiap pernyataan terhadap contoh kasus ekstrem (seperti lingkaran dengan 0 sisi atau segitiga dengan 3 sisi).',
-    },
-  };
-}
-
 /**
  * Procedural Master Generator for arbitrary question counts (1 to 1,000)
  */
@@ -897,8 +813,11 @@ export function generateQuestionsSet(
   category: QuestionFamily | 'all' = 'all',
   difficulty: DifficultyLevel | 'all' = 'all'
 ): InductiveQuestion[] {
-  const safeCount = Math.max(1, Math.min(1000, Math.floor(count)));
+  const safeCount = Number.isFinite(count) ? Math.max(1, Math.min(1000, Math.floor(count))) : 1;
   const questions: InductiveQuestion[] = [];
+  const seen = new Set<string>();
+  const offsets = new Map<QuestionFamily, number>();
+  const cursors = new Map<QuestionFamily, number>();
 
   const families: QuestionFamily[] = [
     'group_classification',
@@ -917,28 +836,48 @@ export function generateQuestionsSet(
     const selectedDifficulty: DifficultyLevel =
       difficulty !== 'all' ? difficulty : diffLevels[i % diffLevels.length];
 
+    // Use independent template selection; the family cycle must not lock a
+    // category onto a single template (both previously used i modulo five).
+    const variant = getRandomInt(0, 100000);
     let q: InductiveQuestion;
     switch (selectedFamily) {
       case 'group_classification':
-        q = generateGroupClassificationQuestion(i, selectedDifficulty);
+        q = generateGroupClassificationQuestion(variant, selectedDifficulty);
         break;
       case 'odd_one_out':
-        q = generateOddOneOutQuestion(i, selectedDifficulty);
+        q = generateOddOneOutQuestion(variant, selectedDifficulty);
         break;
       case 'analogy':
-        q = generateAnalogyQuestion(i, selectedDifficulty);
+        q = generateAnalogyQuestion(variant, selectedDifficulty);
         break;
       case 'sequence_induction':
-        q = generateSequenceInductionQuestion(i, selectedDifficulty);
+        q = generateSequenceInductionQuestion(variant, selectedDifficulty);
         break;
       case 'rule_identification':
-        q = generateRuleIdentificationQuestion(i, selectedDifficulty);
+        q = parameterizedQuestion(variant % 4096, selectedFamily, selectedDifficulty);
         break;
       default:
         q = generateGroupClassificationQuestion(i, selectedDifficulty);
         break;
     }
 
+    // Fixed templates cannot supply 1000 distinct problems. Fall back to
+    // a finite, non-repeating parameter space, never just change the title/ID.
+    let fingerprint = questionFingerprint(q);
+    while (seen.has(fingerprint)) {
+      if (!offsets.has(selectedFamily)) offsets.set(selectedFamily, getRandomInt(0, 4095));
+      const cursor = cursors.get(selectedFamily) ?? 0;
+      if (cursor >= 4096) throw new Error('Ruang variasi soal habis.');
+      cursors.set(selectedFamily, cursor + 1);
+      q = parameterizedQuestion((offsets.get(selectedFamily)! + cursor * 2053) % 4096, selectedFamily, selectedDifficulty);
+      fingerprint = questionFingerprint(q);
+    }
+    seen.add(fingerprint);
+    q.id = `session-${selectedFamily}-${i}`;
+    q.title = `${q.title.replace(/ #\d+$/, '')} #${i + 1}`;
+    q.explanation.distractors.forEach((d, n) => {
+      if (!d.optionId) d.optionId = q.options.filter(o => o.id !== q.correctAnswerId)[n]?.id ?? '';
+    });
     questions.push(q);
   }
 

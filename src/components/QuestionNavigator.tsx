@@ -44,8 +44,8 @@ export const QuestionNavigator: React.FC<QuestionNavigatorProps> = ({
   const handleJumpSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setJumpError(null);
-    const parsed = parseInt(jumpInput.trim(), 10);
-    if (isNaN(parsed) || parsed < 1 || parsed > totalQuestions) {
+    const parsed = Number(jumpInput.trim());
+    if (!Number.isInteger(parsed) || parsed < 1 || parsed > totalQuestions) {
       setJumpError(`Masukkan nomor 1 – ${totalQuestions}`);
       return;
     }
