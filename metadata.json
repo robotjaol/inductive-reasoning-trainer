@@ -1,0 +1,6 @@
+{
+  "name": "AXIOM — Inductive Reasoning Platform",
+  "description": "Sistem penilaian dan pelatihan penalaran induktif profesional dengan generator pola geometris acak, metrik kognitif presisi, dan pembahasan analitis mendalam.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
